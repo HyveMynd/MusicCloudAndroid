@@ -1,0 +1,25 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity" >
+
+    <item android:id="@+id/action_music_list"
+        android:title="@string/action_settings"
+        android:orderInCategory="1"
+        android:icon="@drawable/note_icon_grey"
+        android:showAsAction="always" />
+    <item android:id="@+id/action_playlist_list"
+        android:title="@string/playlist_list"
+        android:orderInCategory="2"
+        android:icon="@drawable/play_list_icon_grey"
+        android:showAsAction="always" />
+    <item android:id="@+id/action_settings"
+        android:title="@string/music_player"
+        android:orderInCategory="3"
+        android:icon="@drawable/mps_icon_grey"
+        android:showAsAction="always" />
+    <item android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        android:orderInCategory="4"
+        android:icon="@drawable/gear_icon_grey"
+        android:showAsAction="always" />
+</menu>
