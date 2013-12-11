@@ -1,5 +1,8 @@
 package com.hyvemynd.musiccloud;
 
+import com.hyvemynd.musiccloud.dto.UserRequestDto;
+import com.hyvemynd.musiccloud.rest.RestService;
+
 import java.util.ArrayList;
 
 /**
@@ -38,6 +41,7 @@ public class MusicCloudModel {
     }
 
     public String getSongName(int pos){
+        new RestService().createUser(new UserRequestDto("asd", "dsa", "asd@com", "sda"));
         return songNames.get(pos);
     }
 

@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
         FragmentTransaction txn = getFragmentManager().beginTransaction();
         txn.add(mainLayout.getId(), loginRegFragment);
         txn.add(mainLayout.getId(), musicListFragment);
-        txn.hide(musicListFragment);
+//        txn.hide(musicListFragment);
         txn.commit();
     }
 
