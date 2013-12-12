@@ -1,9 +1,10 @@
 package com.hyvemynd.musiccloud.rest;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.google.gson.Gson;
-import com.hyvemynd.musiccloud.dto.UserResponseDto;
+import com.hyvemynd.musiccloud.rest.callback.OnPostCallback;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -23,6 +24,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -39,18 +42,9 @@ public abstract class RestService<RequestDto, ResponseDto> {
         client = new DefaultHttpClient();
     }
 
-    public int createObject(RequestDto dto){
-        int id = 0;
-        PostTask task = new PostTask();
+    public void createObject(RequestDto dto, OnPostCallback callback){
+        PostTask task = new PostTask(callback);
         task.execute(dto);
-        try {
-            id = task.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        return id;
     }
 
     public boolean updateObject(RequestDto dto){
@@ -138,8 +132,9 @@ public abstract class RestService<RequestDto, ResponseDto> {
         return gson.fromJson(reader, responseType);
     }
 
-    protected HttpPost getHttpPost(String url, HttpEntity entity){
-        HttpPost post = new HttpPost(url);
+    protected HttpPost getHttpPost(String url, HttpEntity entity) throws MalformedURLException {
+        URI uri = URI.create(url);
+        HttpPost post = new HttpPost(uri);
         post.setHeader("Accept", JSON_TYPE);
         post.setEntity(entity);
         return post;
@@ -169,15 +164,27 @@ public abstract class RestService<RequestDto, ResponseDto> {
 
     protected class PostTask extends AsyncTask<RequestDto, Void, Integer>
     {
+        private OnPostCallback callback;
+
+        public PostTask(OnPostCallback callback){
+            this.callback = callback;
+        }
+
         @Override
         protected Integer doInBackground(RequestDto... params) {
             int id = 0;
             try {
                 id = post(params[0]);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e("RestService", e.getMessage());
             }
             return id;
+        }
+
+        @Override
+        protected void onPostExecute(Integer integer) {
+            callback.onPostSuccess(integer);
+            super.onPostExecute(integer);
         }
     }
 
@@ -189,7 +196,7 @@ public abstract class RestService<RequestDto, ResponseDto> {
             try{
                 result = put(params[0]);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e("RestService", e.getMessage());
             }
             return result;
         }
@@ -203,7 +210,7 @@ public abstract class RestService<RequestDto, ResponseDto> {
             try{
                 result = delete(params[0]);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e("RestService", e.getMessage());
             }
             return result;
         }
@@ -217,7 +224,7 @@ public abstract class RestService<RequestDto, ResponseDto> {
             try{
                 dto = getEntity(params[0]);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e("RestService", e.getMessage());
             }
             return dto;
         }

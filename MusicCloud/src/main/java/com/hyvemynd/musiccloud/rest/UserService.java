@@ -4,8 +4,10 @@ import android.os.AsyncTask;
 
 import com.hyvemynd.musiccloud.dto.UserRequestDto;
 import com.hyvemynd.musiccloud.dto.UserResponseDto;
+import com.hyvemynd.musiccloud.rest.callback.OnGetSuccessCallback;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 
@@ -19,6 +21,34 @@ public class UserService extends RestService<UserRequestDto, UserResponseDto>{
 
     private String getUserUrl(){
         return BASE_URL + "/users";
+    }
+
+    public void login(String email, String password, final OnGetSuccessCallback<Boolean> callback){
+        AsyncTask<String, Void, Boolean> loginTask = new AsyncTask<String, Void, Boolean>() {
+            @Override
+            protected Boolean doInBackground(String... params) {
+                boolean result = false;
+                HttpGet request = new HttpGet(getUserUrl() + "/login");
+                HttpParams httpParams = new BasicHttpParams();
+                httpParams.setParameter("email", params[0]);
+                httpParams.setParameter("password", params[1]);
+                request.setParams(httpParams);
+                try {
+                    response = client.execute(request);
+                    result = getResponseObject(response, Boolean.class);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                callback.onGetSuccess(aBoolean);
+                super.onPostExecute(aBoolean);
+            }
+        };
+        loginTask.execute(email, password);
     }
 
     @Override

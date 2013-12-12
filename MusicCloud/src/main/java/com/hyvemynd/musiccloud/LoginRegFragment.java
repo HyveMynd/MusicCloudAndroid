@@ -14,10 +14,13 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.hyvemynd.musiccloud.rest.callback.RequestCallback;
+
 /**
  * Created by andresmonroy on 11/30/13.
  */
-public class LoginRegFragment extends Fragment {
+public class LoginRegFragment extends Fragment implements RequestCallback {
+    private MainActivity controller;
     private LinearLayout contentLayout;
     private TextView logoView;
     private EditText firstnameView;
@@ -42,6 +45,7 @@ public class LoginRegFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        controller = (MainActivity) activity;
         contentLayout = new LinearLayout(activity);
 
         logoView = new TextView(activity);
@@ -145,19 +149,27 @@ public class LoginRegFragment extends Fragment {
     }
 
     private void loginUser(){
-
+        controller.loginUser(usernameView.getText().toString(), passwordView.getText().toString(), this);
     }
 
     private void createUser(){
-        if (passwordsMatch()){
-            registerButton.setText("GOOD!");
+        if (passwordsMatch() && isValidEmail()){
+            controller.registerUser(firstnameView.getText().toString(), lastnameView.getText().toString(),
+                    usernameView.getText().toString(), passwordView.getText().toString(), this);
         } else {
             registerButton.setText("BAD!!");
         }
     }
 
     private boolean passwordsMatch() {
+        if (passwordView.getText() == null || passwordConfirmView.getText() == null){
+            return false;
+        }
         return passwordView.getText().toString().equals(passwordConfirmView.getText().toString());
+    }
+
+    private boolean isValidEmail(){
+        return usernameView.getText() != null || !usernameView.getText().toString().equals("");
     }
 
     private void loginButtonClick(){
@@ -173,6 +185,39 @@ public class LoginRegFragment extends Fragment {
             hideRegistration();
         } else {
             showRegistration();
+        }
+    }
+
+    private void loginSuccess(){
+        controller.loginSuccess();
+    }
+
+    private void loginFail(){
+        usernameView.setText("BOOO!!!");
+    }
+
+    private void regSuccess(){
+        controller.loginSuccess();
+    }
+
+    private void regFail(){
+        usernameView.setText("BOOO!!!");
+    }
+
+    @Override
+    public void onDataRecieved(Object result) {
+        if(result instanceof Boolean){
+            if ((Boolean)result){
+                loginSuccess();
+            } else {
+                loginFail();
+            }
+        } else if (result instanceof Integer){
+            if (((Integer)result).intValue() == 0){
+                regFail();
+            } else {
+                regSuccess();
+            }
         }
     }
 }
