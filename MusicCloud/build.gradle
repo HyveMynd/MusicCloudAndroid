@@ -13,29 +13,13 @@ repositories {
 }
 
 android {
-    compileSdkVersion 18
+    compileSdkVersion 17
     buildToolsVersion "17.0.0"
 
     defaultConfig {
-        minSdkVersion 18
+        minSdkVersion 17
         targetSdkVersion 18
     }
-
-//    compileOptions {
-//        sourceCompatibility JavaVersion.VERSION_1_7
-//        targetCompatibility JavaVersion.VERSION_1_7
-//    }
-//    buildTypes {
-//        release {
-//            runProguard true
-//            proguardFile getDefaultProguardFile('proguard-android-optimize.txt')
-//        }
-//    }
-//    productFlavors {
-//        defaultFlavor {
-//            proguardFile 'proguard-rules.txt'
-//        }
-//    }
 }
 
 dependencies {

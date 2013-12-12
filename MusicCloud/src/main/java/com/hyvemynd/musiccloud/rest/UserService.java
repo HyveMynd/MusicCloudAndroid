@@ -1,6 +1,7 @@
 package com.hyvemynd.musiccloud.rest;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.hyvemynd.musiccloud.dto.UserRequestDto;
 import com.hyvemynd.musiccloud.dto.UserResponseDto;
@@ -35,9 +36,11 @@ public class UserService extends RestService<UserRequestDto, UserResponseDto>{
                 request.setParams(httpParams);
                 try {
                     response = client.execute(request);
-                    result = getResponseObject(response, Boolean.class);
+                    if (response.getStatusLine().getStatusCode() == 200){
+                        result = getResponseObject(response, Boolean.class);
+                    }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e("UserService", e.getMessage());
                 }
                 return result;
             }
@@ -78,6 +81,6 @@ public class UserService extends RestService<UserRequestDto, UserResponseDto>{
 
     @Override
     protected UserResponseDto getResponseObject(HttpResponse response) throws IOException {
-        return getResponseObject(response, new UserResponseDto().getClass());
+        return getResponseObject(response, UserResponseDto.class);
     }
 }
