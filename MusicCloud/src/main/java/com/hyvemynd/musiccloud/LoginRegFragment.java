@@ -205,7 +205,7 @@ public class LoginRegFragment extends Fragment implements RequestCallback {
     }
 
     @Override
-    public void onDataRecieved(Object result) {
+    public void onDataReceived(Object result) {
         if(result instanceof Boolean){
             if ((Boolean)result){
                 loginSuccess();
@@ -219,5 +219,10 @@ public class LoginRegFragment extends Fragment implements RequestCallback {
                 regSuccess();
             }
         }
+    }
+
+    @Override
+    public void onModelChanged() {
+
     }
 }

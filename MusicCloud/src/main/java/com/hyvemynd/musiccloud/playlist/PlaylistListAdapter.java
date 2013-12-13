@@ -30,7 +30,7 @@ public class PlaylistListAdapter extends ArrayAdapter<PlayListItem> {
 
     @Override
     public int getCount() {
-        return mModel.getCount();
+        return 2;
     }
 
     @Override

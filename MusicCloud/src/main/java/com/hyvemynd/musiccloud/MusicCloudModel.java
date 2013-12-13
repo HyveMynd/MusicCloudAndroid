@@ -1,12 +1,15 @@
 package com.hyvemynd.musiccloud;
 
+import com.hyvemynd.musiccloud.dto.SongResponseDto;
 import com.hyvemynd.musiccloud.dto.UserRequestDto;
+import com.hyvemynd.musiccloud.rest.SongService;
 import com.hyvemynd.musiccloud.rest.callback.OnGetSuccessCallback;
 import com.hyvemynd.musiccloud.rest.callback.RequestCallback;
 import com.hyvemynd.musiccloud.rest.UserService;
 import com.hyvemynd.musiccloud.rest.callback.OnPostCallback;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by andresmonroy on 11/26/13.
@@ -16,31 +19,19 @@ public class MusicCloudModel {
 
     private String userEmail;
 
-    private ArrayList<String> songNames;
-    private ArrayList<String> artistName;
-    private ArrayList<String> songLength;
     private ArrayList<String> playlistNames;
     private ArrayList<String> playlistItems;
 
+    private List<SongResponseDto> allSongs;
+
     private MusicCloudModel(){
-        songNames = new ArrayList<String>();
-        artistName = new ArrayList<String>();
-        songLength = new ArrayList<String>();
         playlistNames = new ArrayList<String>();
         playlistItems = new ArrayList<String>();
+        allSongs = new ArrayList<SongResponseDto>();
         initTest();
     }
 
     private void initTest(){
-        songNames.add("Little Lion Man");
-        songNames.add("Adagio For Strings");
-
-        artistName.add("Mumford and Sons");
-        artistName.add("Dj Tiesto");
-
-        songLength.add("1:00");
-        songLength.add("2:00");
-
         playlistNames.add("Mix 1");
         playlistNames.add("Mix 2");
 
@@ -62,7 +53,7 @@ public class MusicCloudModel {
         service.createObject(dto, new OnPostCallback() {
             @Override
             public void onPostSuccess(int result) {
-                callback.onDataRecieved(result);
+                callback.onDataReceived(result);
             }
         });
     }
@@ -73,30 +64,21 @@ public class MusicCloudModel {
         service.login(email, password, new OnGetSuccessCallback<Boolean>() {
             @Override
             public void onGetSuccess(Boolean result) {
-                callback.onDataRecieved(result);
+                callback.onDataReceived(result);
             }
         });
     }
 
-    public void getAllSongs(){
+    public void requestAllSongs(final RequestCallback callback){
+        SongService service = new SongService(userEmail);
+        service.getSongsForUser(new OnGetSuccessCallback<List<SongResponseDto>>() {
+            @Override
+            public void onGetSuccess(List<SongResponseDto> result) {
+                allSongs = result;
+                callback.onModelChanged();
+            }
+        });
     }
-
-    public String getSongName(int pos){
-        return songNames.get(pos);
-    }
-
-    public String getArtistName(int pos){
-        return artistName.get(pos);
-    }
-
-    public String getSongLength(int pos){
-        return songLength.get(pos);
-    }
-
-    public int getCount(){
-        return songLength.size();
-    }
-
     public String getPlaylistName(int pos){
         return playlistNames.get(pos);
     }
@@ -107,5 +89,9 @@ public class MusicCloudModel {
 
     public String getUserEmail() {
         return userEmail;
+    }
+
+    public List<SongResponseDto> getAllSongs() {
+        return allSongs;
     }
 }

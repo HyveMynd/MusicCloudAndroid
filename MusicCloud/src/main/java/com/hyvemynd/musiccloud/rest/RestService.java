@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.hyvemynd.musiccloud.rest.callback.OnPostCallback;
 
 import org.apache.http.HttpEntity;
@@ -23,6 +24,7 @@ import org.apache.http.protocol.HTTP;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -125,11 +127,25 @@ public abstract class RestService<RequestDto, ResponseDto> {
 
     protected abstract ResponseDto getResponseObject(HttpResponse response) throws IOException;
 
-    protected <T> T getResponseObject(HttpResponse response, Class<T> responseType) throws IOException {
-        Gson gson = new Gson();
+    private <T> T getJsonObject(HttpResponse response, Class<T> responseType) throws IOException {
+        return new Gson().fromJson(getReader(response), responseType);
+    }
+
+    private <T> T getJsonArrayObject (HttpResponse response, TypeToken<T> typeToken) throws IOException {
+        return new Gson().fromJson(getReader(response), typeToken.getType());
+    }
+
+    private InputStreamReader getReader(HttpResponse response) throws IOException {
         InputStream is = response.getEntity().getContent();
-        InputStreamReader reader = new InputStreamReader(is);
-        return gson.fromJson(reader, responseType);
+        return new InputStreamReader(is);
+    }
+
+    protected <T> T getResponseObject(HttpResponse response, TypeToken<T> typeToken) throws IOException {
+        return getJsonArrayObject(response, typeToken);
+    }
+
+    protected <T> T getResponseObject(HttpResponse response, Class<T> responseType) throws IOException {
+        return getJsonObject(response, responseType);
     }
 
     protected HttpPost getHttpPost(String url, HttpEntity entity) throws MalformedURLException {

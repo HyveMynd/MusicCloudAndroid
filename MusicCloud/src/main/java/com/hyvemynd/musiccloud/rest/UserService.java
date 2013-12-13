@@ -29,11 +29,9 @@ public class UserService extends RestService<UserRequestDto, UserResponseDto>{
             @Override
             protected Boolean doInBackground(String... params) {
                 boolean result = false;
-                HttpGet request = new HttpGet(getUserUrl() + "/login");
-                HttpParams httpParams = new BasicHttpParams();
-                httpParams.setParameter("email", params[0]);
-                httpParams.setParameter("password", params[1]);
-                request.setParams(httpParams);
+                String url = String.format(getUserUrl() + "/login/%s/%s", params[0], params[1]);
+                HttpGet request = new HttpGet(url);
+                request.setHeader("Accept", JSON_TYPE);
                 try {
                     response = client.execute(request);
                     if (response.getStatusLine().getStatusCode() == 200){

@@ -4,6 +4,7 @@ package com.hyvemynd.musiccloud.dto;
  * Created by andresmonroy on 12/11/13.
  */
 public class SongResponseDto {
+    private int id;
     private String name;
     private String artist;
     private String album;
@@ -60,5 +61,13 @@ public class SongResponseDto {
 
     public void setSizeMb(int sizeMb) {
         this.sizeMb = sizeMb;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

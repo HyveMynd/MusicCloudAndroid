@@ -2,35 +2,41 @@ package com.hyvemynd.musiccloud.musiclist;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.text.format.Time;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.hyvemynd.musiccloud.MusicCloudModel;
+import com.hyvemynd.musiccloud.dto.SongResponseDto;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by andresmonroy on 11/26/13.
  */
 public class MusicListAdapter extends ArrayAdapter {
-    private MusicCloudModel mModel;
     private Context mContext;
     private static final int SONG_NAME_SIZE = 25;
     private static final int ARTIST_NAME_SIZE = 15;
     private static final int SONG_LENGTH_SIZE = 18;
+    private List<SongResponseDto> songs;
 
-    public MusicListAdapter(Context context, MusicCloudModel model) {
+    public MusicListAdapter(Context context, List<SongResponseDto> songs) {
         super(context, 0);
-        this.mModel = model;
         this.mContext = context;
+        this.songs = songs;
     }
 
     @Override
     public int getCount() {
-        return mModel.getCount();
+        return songs.size();
     }
 
     @Override
@@ -46,9 +52,13 @@ public class MusicListAdapter extends ArrayAdapter {
         } else {
             holder = (ViewHolder)row.getTag();
         }
-        holder.songName.setText(mModel.getSongName(position));
-        holder.artistName.setText(mModel.getArtistName(position));
-        holder.songLength.setText(mModel.getSongLength(position));
+        holder.songName.setText(songs.get(position).getName());
+        holder.artistName.setText(songs.get(position).getArtist());
+        int total = songs.get(position).getSeconds();
+        int min = total / 60;
+        int sec = total % 60;
+        String length = Integer.toString(min) + ":" + Integer.toString(sec);
+        holder.songLength.setText(length);
         return row;
     }
 
