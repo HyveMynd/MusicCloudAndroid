@@ -4,7 +4,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.hyvemynd.musiccloud.rest.callback.OnGetSuccessCallback;
 import com.hyvemynd.musiccloud.rest.callback.OnPostCallback;
 
 import org.apache.http.HttpEntity;
@@ -21,11 +22,13 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.concurrent.ExecutionException;
@@ -38,7 +41,6 @@ public abstract class RestService<RequestDto, ResponseDto> {
     protected static final String JSON_TYPE = "application/json";
 
     protected HttpClient client;
-    protected HttpResponse response;
 
     public RestService(){
         client = new DefaultHttpClient();
@@ -77,18 +79,9 @@ public abstract class RestService<RequestDto, ResponseDto> {
         return result;
     }
 
-    public ResponseDto getObject(String identifier){
-        ResponseDto result = null;
-        GetTask task = new GetTask();
+    public void getObject(String identifier, OnGetSuccessCallback<ResponseDto> callback){
+        GetTask task = new GetTask(callback);
         task.execute(identifier);
-        try {
-            result = task.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        return result;
     }
 
     protected abstract String getPostUrl();
@@ -100,52 +93,54 @@ public abstract class RestService<RequestDto, ResponseDto> {
     protected int post(RequestDto dto) throws IOException{
         StringEntity se = getJsonEntity(dto);
         HttpPost request = getHttpPost(getPostUrl(), se);
-        response = client.execute(request);
+        HttpResponse response = client.execute(request);
         return getResponseObject(response, int.class);
     }
 
     protected boolean put(RequestDto dto) throws IOException{
         StringEntity se = getJsonEntity(dto);
         HttpPut request = getHttpPut(getPutUrl(), se);
-        response = client.execute(request);
+        HttpResponse response = client.execute(request);
         return getResponseObject(response, Boolean.class);
     }
 
     protected boolean delete(int id) throws IOException{
         HttpDelete request = getHttpDelete(getDeleteUrl(), id);
-        response = client.execute(request);
+        HttpResponse response = client.execute(request);
         return getResponseObject(response, Boolean.class);
     }
 
     protected ResponseDto getEntity(String identifier) throws IOException{
         HttpGet request = new HttpGet(getGetUrl());
         request.setParams(getGetParam(identifier));
-        response = client.execute(request);
+        HttpResponse response = client.execute(request);
         return getResponseObject(response);
-
     }
 
     protected abstract ResponseDto getResponseObject(HttpResponse response) throws IOException;
 
-    private <T> T getJsonObject(HttpResponse response, Class<T> responseType) throws IOException {
-        return new Gson().fromJson(getReader(response), responseType);
-    }
-
-    private <T> T getJsonArrayObject (HttpResponse response, TypeToken<T> typeToken) throws IOException {
-        return new Gson().fromJson(getReader(response), typeToken.getType());
-    }
-
-    private InputStreamReader getReader(HttpResponse response) throws IOException {
-        InputStream is = response.getEntity().getContent();
-        return new InputStreamReader(is);
-    }
-
-    protected <T> T getResponseObject(HttpResponse response, TypeToken<T> typeToken) throws IOException {
-        return getJsonArrayObject(response, typeToken);
-    }
-
     protected <T> T getResponseObject(HttpResponse response, Class<T> responseType) throws IOException {
-        return getJsonObject(response, responseType);
+        JsonReader reader = null;
+        try{
+            reader = new JsonReader(new BufferedReader(
+                    new InputStreamReader(response.getEntity().getContent(), "UTF-8")));
+            return new Gson().fromJson(reader, responseType);
+        } finally {
+            assert reader != null;
+            reader.close();
+        }
+    }
+
+    protected <T> T getResponseObject(HttpResponse response, Type type) throws IOException {
+        JsonReader reader = null;
+        try{
+            reader = new JsonReader(new BufferedReader(
+                    new InputStreamReader(response.getEntity().getContent(), "UTF-8")));
+            return new Gson().fromJson(reader, type);
+        } finally {
+            assert reader != null;
+            reader.close();
+        }
     }
 
     protected HttpPost getHttpPost(String url, HttpEntity entity) throws MalformedURLException {
@@ -233,6 +228,11 @@ public abstract class RestService<RequestDto, ResponseDto> {
     }
 
     protected class GetTask extends AsyncTask<String, Void, ResponseDto>{
+        private OnGetSuccessCallback<ResponseDto> callback;
+
+        public GetTask(OnGetSuccessCallback<ResponseDto> callback) {
+            this.callback = callback;
+        }
 
         @Override
         protected ResponseDto doInBackground(String... params) {
@@ -243,6 +243,12 @@ public abstract class RestService<RequestDto, ResponseDto> {
                 Log.e("RestService", e.getMessage());
             }
             return dto;
+        }
+
+        @Override
+        protected void onPostExecute(ResponseDto responseDto) {
+            callback.onGetSuccess(responseDto);
+            super.onPostExecute(responseDto);
         }
     }
 }

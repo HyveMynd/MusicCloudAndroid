@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class MusicListAdapter extends ArrayAdapter {
     private Context mContext;
-    private static final int SONG_NAME_SIZE = 25;
+    private static final int SONG_NAME_SIZE = 22;
     private static final int ARTIST_NAME_SIZE = 15;
     private static final int SONG_LENGTH_SIZE = 18;
     private List<SongResponseDto> songs;
@@ -52,9 +52,9 @@ public class MusicListAdapter extends ArrayAdapter {
         } else {
             holder = (ViewHolder)row.getTag();
         }
-        holder.songName.setText(songs.get(position).getName());
-        holder.artistName.setText(songs.get(position).getArtist());
-        int total = songs.get(position).getSeconds();
+        holder.songName.setText(songs.get(position).Name);
+        holder.artistName.setText(songs.get(position).Artist);
+        int total = songs.get(position).Seconds;
         int min = total / 60;
         int sec = total % 60;
         String length = Integer.toString(min) + ":" + Integer.toString(sec);

@@ -12,6 +12,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.hyvemynd.musiccloud.musiclist.MusicListFragment;
+import com.hyvemynd.musiccloud.musicplayer.MusicPlayerFragment;
 import com.hyvemynd.musiccloud.playlist.PlaylistListFragment;
 import com.hyvemynd.musiccloud.rest.callback.RequestCallback;
 
@@ -24,8 +25,8 @@ public class MainActivity extends Activity {
     private MusicCloudModel model;
     private LinearLayout mainLayout;
     private MusicListFragment musicListFragment;
-    private LoginRegFragment loginRegFragment;
     private PlaylistListFragment playlistFragment;
+    private MusicPlayerFragment playerFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,9 +39,10 @@ public class MainActivity extends Activity {
     }
 
     private void initFragments(){
-        loginRegFragment = new LoginRegFragment();
+        LoginRegFragment loginRegFragment = new LoginRegFragment();
         musicListFragment = new MusicListFragment();
         playlistFragment = new PlaylistListFragment();
+        playerFragment = new MusicPlayerFragment();
 
         FragmentTransaction txn = getFragmentManager().beginTransaction();
         txn.add(mainLayout.getId(), loginRegFragment);
@@ -68,6 +70,9 @@ public class MainActivity extends Activity {
                 return true;
             case R.id.action_playlist_list:
                 replaceFragment(PLAYLIST_TAG, playlistFragment);
+                return true;
+            case R.id.action_music_player:
+                replaceFragment(MUSIC_PLAYER_TAG, playerFragment);
             default:
                 return super.onOptionsItemSelected(item);
         }

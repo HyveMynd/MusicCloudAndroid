@@ -1,8 +1,11 @@
 package com.hyvemynd.musiccloud.rest;
 
+import android.app.Activity;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 
 import com.google.gson.reflect.TypeToken;
+import com.hyvemynd.musiccloud.dto.SongDataResponseDto;
 import com.hyvemynd.musiccloud.dto.SongRequestDto;
 import com.hyvemynd.musiccloud.dto.SongResponseDto;
 import com.hyvemynd.musiccloud.rest.callback.OnGetSuccessCallback;
@@ -16,8 +19,12 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -49,9 +56,9 @@ public class SongService extends RestService<SongRequestDto, SongResponseDto> {
                 HttpGet request = new HttpGet(BASE_URL + String.format("/users/%s/songs", userEmail));
                 request.setHeader("Accept", JSON_TYPE);
                 try{
-                    response = client.execute(request);
+                    HttpResponse response = client.execute(request);
                     if (response.getStatusLine().getStatusCode() == 200){
-                        result = getResponseObject(response, new TypeToken<ArrayList<SongResponseDto>>(){});
+                        result = getResponseObject(response, new TypeToken<List<SongResponseDto>>(){}.getType());
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -60,6 +67,61 @@ public class SongService extends RestService<SongRequestDto, SongResponseDto> {
             }
         };
         getTask.execute(null);
+    }
+
+    public void getSongData(int id, final OnGetSuccessCallback<SongDataResponseDto> callback){
+        AsyncTask<Integer, Void, SongDataResponseDto> getTask = new AsyncTask<Integer, Void, SongDataResponseDto>() {
+            @Override
+            protected SongDataResponseDto doInBackground(Integer... integers) {
+                SongDataResponseDto data = null;
+                HttpGet request = new HttpGet(BASE_URL + String.format("/songs/%d/data", integers[0]));
+                request.setHeader("Accept", JSON_TYPE);
+                try{
+                    HttpResponse response = client.execute(request);
+                    if (response.getStatusLine().getStatusCode() == 200){
+                        data = getResponseObject(response, SongDataResponseDto.class);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return data;
+            }
+
+            @Override
+            protected void onPostExecute(SongDataResponseDto data) {
+                callback.onGetSuccess(data);
+                super.onPostExecute(data);
+            }
+        };
+        getTask.execute(id);
+    }
+
+    public void playSongData(byte[] data, Activity activity){
+        try {
+            // create temp file that will hold byte array
+            File tempMp3 = File.createTempFile("kurchina", "mp3", activity.getCacheDir());
+            tempMp3.deleteOnExit();
+            FileOutputStream fos = new FileOutputStream(tempMp3);
+            fos.write(data);
+            fos.close();
+
+            // Tried reusing instance of media player
+            // but that resulted in system crashes...
+            MediaPlayer mediaPlayer = new MediaPlayer();
+
+            // Tried passing path directly, but kept getting
+            // "Prepare failed.: status=0x1"
+            // so using file descriptor instead
+            FileInputStream fis = new FileInputStream(tempMp3);
+            mediaPlayer.setDataSource(fis.getFD());
+
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+        } catch (IOException ex) {
+            String s = ex.toString();
+            ex.printStackTrace();
+        }
+
     }
 
     @Override

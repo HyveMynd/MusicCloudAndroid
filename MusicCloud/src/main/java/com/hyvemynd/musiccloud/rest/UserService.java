@@ -33,7 +33,7 @@ public class UserService extends RestService<UserRequestDto, UserResponseDto>{
                 HttpGet request = new HttpGet(url);
                 request.setHeader("Accept", JSON_TYPE);
                 try {
-                    response = client.execute(request);
+                    HttpResponse response = client.execute(request);
                     if (response.getStatusLine().getStatusCode() == 200){
                         result = getResponseObject(response, Boolean.class);
                     }

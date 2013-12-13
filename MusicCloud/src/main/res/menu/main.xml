@@ -12,7 +12,7 @@
         android:orderInCategory="2"
         android:icon="@drawable/play_list_icon_grey"
         android:showAsAction="always" />
-    <item android:id="@+id/action_settings"
+    <item android:id="@+id/action_music_player"
         android:title="@string/music_player"
         android:orderInCategory="3"
         android:icon="@drawable/play_icon_grey"
