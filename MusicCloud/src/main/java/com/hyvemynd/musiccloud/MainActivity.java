@@ -12,9 +12,14 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.hyvemynd.musiccloud.musiclist.MusicListFragment;
+import com.hyvemynd.musiccloud.musiclist.OnSongSelectedListener;
+import com.hyvemynd.musiccloud.musiclist.SongItem;
 import com.hyvemynd.musiccloud.musicplayer.MusicPlayerFragment;
 import com.hyvemynd.musiccloud.playlist.PlaylistListFragment;
 import com.hyvemynd.musiccloud.rest.callback.RequestCallback;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity {
     private static final String MUSIC_LIST_TAG = "music_list_tag";
@@ -41,6 +46,14 @@ public class MainActivity extends Activity {
     private void initFragments(){
         LoginRegFragment loginRegFragment = new LoginRegFragment();
         musicListFragment = new MusicListFragment();
+        musicListFragment.setOnSongSelectedListener(new OnSongSelectedListener() {
+            @Override
+            public void onSongSelected(int position) {
+                replaceFragment(MUSIC_PLAYER_TAG, playerFragment);
+                List<SongItem> songs = model.getPlaylist(true);
+                playerFragment.setPlaylist(songs, position);
+            }
+        });
         playlistFragment = new PlaylistListFragment();
         playerFragment = new MusicPlayerFragment();
 

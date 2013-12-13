@@ -5,6 +5,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
@@ -23,6 +24,7 @@ import java.io.IOException;
 public class MusicListFragment extends ListFragment implements RequestCallback {
     private Button addButtonView;
     private MusicCloudModel model;
+    private OnSongSelectedListener onSongSelectedListener;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -51,7 +53,7 @@ public class MusicListFragment extends ListFragment implements RequestCallback {
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        model.playSong(position, true, this);
+        onSongSelectedListener.onSongSelected(position);
         super.onListItemClick(l, v, position, id);
     }
 
@@ -63,35 +65,18 @@ public class MusicListFragment extends ListFragment implements RequestCallback {
 
     @Override
     public void onDataReceived(Object result) {
-        byte[] data = (byte[]) result;
-        try {
-            // create temp file that will hold byte array
-            File tempMp3 = File.createTempFile("kurchina", "mp3", getActivity().getCacheDir());
-            tempMp3.deleteOnExit();
-            FileOutputStream fos = new FileOutputStream(tempMp3);
-            fos.write(data);
-            fos.close();
-
-            // Tried reusing instance of media player
-            // but that resulted in system crashes...
-            MediaPlayer mediaPlayer = new MediaPlayer();
-
-            // Tried passing path directly, but kept getting
-            // "Prepare failed.: status=0x1"
-            // so using file descriptor instead
-            FileInputStream fis = new FileInputStream(tempMp3);
-            mediaPlayer.setDataSource(fis.getFD());
-
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-        } catch (IOException ex) {
-            String s = ex.toString();
-            ex.printStackTrace();
-        }
     }
 
     @Override
     public void onModelChanged() {
         setListAdapter(new MusicListAdapter(getActivity(), model.getAllSongs()));
+    }
+
+    public OnSongSelectedListener getOnSongSelectedListener() {
+        return onSongSelectedListener;
+    }
+
+    public void setOnSongSelectedListener(OnSongSelectedListener onSongSelectedListener) {
+        this.onSongSelectedListener = onSongSelectedListener;
     }
 }

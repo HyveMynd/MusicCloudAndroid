@@ -1,8 +1,8 @@
 package com.hyvemynd.musiccloud;
 
-import com.hyvemynd.musiccloud.dto.SongDataResponseDto;
 import com.hyvemynd.musiccloud.dto.SongResponseDto;
 import com.hyvemynd.musiccloud.dto.UserRequestDto;
+import com.hyvemynd.musiccloud.musiclist.SongItem;
 import com.hyvemynd.musiccloud.rest.SongService;
 import com.hyvemynd.musiccloud.rest.callback.OnGetSuccessCallback;
 import com.hyvemynd.musiccloud.rest.callback.RequestCallback;
@@ -11,9 +11,8 @@ import com.hyvemynd.musiccloud.rest.callback.OnPostCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
+import java.util.Map;
 
 /**
  * Created by andresmonroy on 11/26/13.
@@ -27,13 +26,11 @@ public class MusicCloudModel {
     private ArrayList<String> playlistItems;
 
     private List<SongResponseDto> allSongs;
-    private Queue<byte[]> songData;
 
     private MusicCloudModel(){
         playlistNames = new ArrayList<String>();
         playlistItems = new ArrayList<String>();
         allSongs = new ArrayList<SongResponseDto>();
-        songData = new LinkedList<byte[]>();
         initTest();
     }
 
@@ -86,18 +83,22 @@ public class MusicCloudModel {
         });
     }
 
-    public void playSong(int position, boolean isFromMainLibrary, final RequestCallback callback){
+    public String getSongDataId(int position, boolean isFromMainLibrary){
         if (isFromMainLibrary){
-            int id = allSongs.get(position).Id;
-            SongService service = new SongService(userEmail);
-            service.getSongData(id, new OnGetSuccessCallback<SongDataResponseDto>() {
-                @Override
-                public void onGetSuccess(SongDataResponseDto result) {
-                    songData.add(result.Data.getBytes());
-                    callback.onDataReceived(result.Data.getBytes());
-                }
-            });
+            return SongService.getSongDataUrl(allSongs.get(position).Id);
         }
+        return "";
+    }
+
+    public List<SongItem> getPlaylist(boolean isEntireLibrary){
+        List<SongItem> songs = new ArrayList<SongItem>();
+        if (isEntireLibrary){
+            for(SongResponseDto s : allSongs){
+                String url = SongService.getSongDataUrl(s.Id);
+                songs.add(new SongItem(s.Name, s.Artist, s.Album, url));
+            }
+        }
+        return songs;
     }
 
     public String getPlaylistName(int pos){

@@ -7,6 +7,7 @@ public class SongResponseDto {
     public int Id;
     public String Name;
     public String Artist;
+    public String Album;
     public int Seconds;
     public int SizeMb;
 }

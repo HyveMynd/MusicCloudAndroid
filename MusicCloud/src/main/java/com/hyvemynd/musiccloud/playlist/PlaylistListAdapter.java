@@ -14,7 +14,7 @@ import com.hyvemynd.musiccloud.MusicCloudModel;
 /**
  * Created by andresmonroy on 11/26/13.
  */
-public class PlaylistListAdapter extends ArrayAdapter<PlayListItem> {
+public class PlaylistListAdapter extends ArrayAdapter {
     private Context mContext;
     private MusicCloudModel mModel;
 

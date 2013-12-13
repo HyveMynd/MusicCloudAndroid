@@ -5,17 +5,12 @@ import android.media.MediaPlayer;
 import android.os.AsyncTask;
 
 import com.google.gson.reflect.TypeToken;
-import com.hyvemynd.musiccloud.dto.SongDataResponseDto;
 import com.hyvemynd.musiccloud.dto.SongRequestDto;
 import com.hyvemynd.musiccloud.dto.SongResponseDto;
 import com.hyvemynd.musiccloud.rest.callback.OnGetSuccessCallback;
-import com.hyvemynd.musiccloud.rest.callback.OnPostCallback;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 
@@ -23,8 +18,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -69,31 +62,8 @@ public class SongService extends RestService<SongRequestDto, SongResponseDto> {
         getTask.execute(null);
     }
 
-    public void getSongData(int id, final OnGetSuccessCallback<SongDataResponseDto> callback){
-        AsyncTask<Integer, Void, SongDataResponseDto> getTask = new AsyncTask<Integer, Void, SongDataResponseDto>() {
-            @Override
-            protected SongDataResponseDto doInBackground(Integer... integers) {
-                SongDataResponseDto data = null;
-                HttpGet request = new HttpGet(BASE_URL + String.format("/songs/%d/data", integers[0]));
-                request.setHeader("Accept", JSON_TYPE);
-                try{
-                    HttpResponse response = client.execute(request);
-                    if (response.getStatusLine().getStatusCode() == 200){
-                        data = getResponseObject(response, SongDataResponseDto.class);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return data;
-            }
-
-            @Override
-            protected void onPostExecute(SongDataResponseDto data) {
-                callback.onGetSuccess(data);
-                super.onPostExecute(data);
-            }
-        };
-        getTask.execute(id);
+    public static String getSongDataUrl(int id){
+        return BASE_URL + String.format("/songs/%d/raw", id);
     }
 
     public void playSongData(byte[] data, Activity activity){
