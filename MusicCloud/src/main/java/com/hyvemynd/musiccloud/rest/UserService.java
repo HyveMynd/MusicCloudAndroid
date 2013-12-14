@@ -5,7 +5,7 @@ import android.util.Log;
 
 import com.hyvemynd.musiccloud.dto.UserRequestDto;
 import com.hyvemynd.musiccloud.dto.UserResponseDto;
-import com.hyvemynd.musiccloud.rest.callback.OnGetSuccessCallback;
+import com.hyvemynd.musiccloud.rest.callback.OnGetCallback;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -13,7 +13,6 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Created by Andres on 12/11/13.
@@ -24,7 +23,7 @@ public class UserService extends RestService<UserRequestDto, UserResponseDto>{
         return BASE_URL + "/users";
     }
 
-    public void login(String email, String password, final OnGetSuccessCallback<Boolean> callback){
+    public void login(String email, String password, final OnGetCallback<Boolean> callback){
         AsyncTask<String, Void, Boolean> loginTask = new AsyncTask<String, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(String... params) {

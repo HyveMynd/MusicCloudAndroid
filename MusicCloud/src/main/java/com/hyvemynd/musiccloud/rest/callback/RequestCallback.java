@@ -6,4 +6,5 @@ package com.hyvemynd.musiccloud.rest.callback;
 public interface RequestCallback {
     void onDataReceived(Object result);
     void onModelChanged();
+    void onRequestFail(String message);
 }

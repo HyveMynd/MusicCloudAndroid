@@ -1,23 +1,46 @@
 package com.hyvemynd.musiccloud.rest;
 
-import android.app.Activity;
-import android.media.MediaPlayer;
+import android.content.ContentResolver;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.MediaStore;
+import android.util.Log;
 
 import com.google.gson.reflect.TypeToken;
 import com.hyvemynd.musiccloud.dto.SongRequestDto;
 import com.hyvemynd.musiccloud.dto.SongResponseDto;
-import com.hyvemynd.musiccloud.rest.callback.OnGetSuccessCallback;
+import com.hyvemynd.musiccloud.rest.callback.OnGetCallback;
+import com.hyvemynd.musiccloud.rest.callback.OnPostCallback;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -34,7 +57,7 @@ public class SongService extends RestService<SongRequestDto, SongResponseDto> {
         return BASE_URL + "/songs";
     }
 
-    public void getSongsForUser(final OnGetSuccessCallback<List<SongResponseDto>> callback){
+    public void getSongsForUser(final OnGetCallback<List<SongResponseDto>> callback){
         AsyncTask<Void, Void, List<SongResponseDto>> getTask = new AsyncTask<Void, Void, List<SongResponseDto>>() {
 
             @Override
@@ -62,41 +85,79 @@ public class SongService extends RestService<SongRequestDto, SongResponseDto> {
         getTask.execute(null);
     }
 
+    public void getSongData(final ContentResolver resolver, final Uri uri, final int songId, final OnPostCallback callback){
+        AsyncTask<Void, Void, Void> postData = new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                streamSong(resolver, uri, songId);
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                callback.onPostSuccess(0);
+                super.onPostExecute(aVoid);
+            }
+        };
+        postData.execute(null);
+    }
+
+    private void streamSong(ContentResolver resolver, Uri uri, int songId){
+        HttpURLConnection connection = null;
+        DataOutputStream outputStream = null;
+        DataInputStream inputStream = null;
+
+        Cursor cursor = null;
+        String pathToOurFile; //"/data/file_to_send.mp3";
+        try {
+            String[] proj = { MediaStore.Images.Media.DATA };
+            cursor = resolver.query(uri, proj, null, null, null);
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            pathToOurFile = cursor.getString(column_index);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        String urlServer = String.format("http://hyvemynd.org/songs/%d", songId); //"http://192.168.1.1/handle_upload.php";
+
+
+        try {
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpPost postRequest = new HttpPost(urlServer);
+            MultipartEntity reqEntity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+            if(!pathToOurFile.isEmpty()){
+
+                FileBody filebodyVideo = new FileBody(new File(pathToOurFile));
+                reqEntity.addPart("uploaded", filebodyVideo);
+            }
+            postRequest.setEntity(reqEntity);
+            HttpResponse response = httpClient.execute(postRequest);
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    response.getEntity().getContent(), "UTF-8"));
+            String sResponse;
+            StringBuilder s = new StringBuilder();
+
+            while ((sResponse = reader.readLine()) != null) {
+                s = s.append(sResponse);
+            }
+
+            Log.e("Response: ", s.toString());
+
+        } catch (Exception e) {
+            Log.e(e.getClass().getName(), e.getMessage());
+        }
+
+    }
     public static String getSongDataUrl(int id){
         return BASE_URL + String.format("/songs/%d/raw", id);
     }
 
-    public void playSongData(byte[] data, Activity activity){
-        try {
-            // create temp file that will hold byte array
-            File tempMp3 = File.createTempFile("kurchina", "mp3", activity.getCacheDir());
-            tempMp3.deleteOnExit();
-            FileOutputStream fos = new FileOutputStream(tempMp3);
-            fos.write(data);
-            fos.close();
-
-            // Tried reusing instance of media player
-            // but that resulted in system crashes...
-            MediaPlayer mediaPlayer = new MediaPlayer();
-
-            // Tried passing path directly, but kept getting
-            // "Prepare failed.: status=0x1"
-            // so using file descriptor instead
-            FileInputStream fis = new FileInputStream(tempMp3);
-            mediaPlayer.setDataSource(fis.getFD());
-
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-        } catch (IOException ex) {
-            String s = ex.toString();
-            ex.printStackTrace();
-        }
-
-    }
-
     @Override
     protected String getPostUrl() {
-        return getSongUrl() + String.format("/users/%s/songs", userEmail);
+        return getSongUrl();
     }
 
     @Override

@@ -9,28 +9,35 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.hyvemynd.musiccloud.MusicCloudModel;
+import com.hyvemynd.musiccloud.dto.PlaylistResponseDto;
+
+import java.util.List;
 
 /**
  * Created by andresmonroy on 11/26/13.
  */
 public class PlaylistListAdapter extends ArrayAdapter {
     private Context mContext;
-    private MusicCloudModel mModel;
+    private List<PlaylistResponseDto> playLists;
 
-    private static final int PLAYLIST_NAME_SIZE = 25;
+    private static final int PLAYLIST_NAME_SIZE = 22;
+    public static final int EXPR_SIZE = 14;
     private static final int ITEMS_SIZE = 18;
 
 
-    public PlaylistListAdapter(Context context, MusicCloudModel model) {
+    public PlaylistListAdapter(Context context, List<PlaylistResponseDto> playlists) {
         super(context, 0);
         mContext = context;
-        mModel = model;
+        this.playLists = playlists;
+    }
+
+    public void setList(List<PlaylistResponseDto> list){
+        playLists = list;
     }
 
     @Override
     public int getCount() {
-        return 2;
+        return playLists.size();
     }
 
     @Override
@@ -46,8 +53,13 @@ public class PlaylistListAdapter extends ArrayAdapter {
         } else {
             holder = (ViewHolder)row.getTag();
         }
-        holder.name.setText(mModel.getPlaylistName(position));
-        holder.items.setText(mModel.getPlaylistItems(position));
+        holder.name.setText(playLists.get(position).Name);
+        holder.items.setText(Integer.toString(playLists.get(position).Items));
+        if (playLists.get(position).IsTemporary){
+            holder.expr.setText(playLists.get(position).ExpirationDate);
+        } else {
+            holder.expr.setText("");
+        }
         return row;
     }
 
@@ -58,6 +70,8 @@ public class PlaylistListAdapter extends ArrayAdapter {
         // Set layout rules
         RelativeLayout.LayoutParams playlistNameParam = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         playlistNameParam.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        RelativeLayout.LayoutParams exprParam = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        exprParam.addRule(RelativeLayout.CENTER_HORIZONTAL);
         RelativeLayout.LayoutParams itemsParam = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         itemsParam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 
@@ -70,14 +84,17 @@ public class PlaylistListAdapter extends ArrayAdapter {
     }
 
         class ViewHolder {
-        private TextView name;
-        private TextView items;
+            private TextView name;
+            private TextView expr;
+            private TextView items;
 
-        public ViewHolder(){
-            name = new TextView(mContext);
-            name.setTextSize(PLAYLIST_NAME_SIZE);
-            items = new TextView(mContext);
-            items.setTextSize(ITEMS_SIZE);
-        }
+            public ViewHolder(){
+                name = new TextView(mContext);
+                name.setTextSize(PLAYLIST_NAME_SIZE);
+                expr = new TextView(mContext);
+                expr.setTextSize(EXPR_SIZE);
+                items = new TextView(mContext);
+                items.setTextSize(ITEMS_SIZE);
+            }
     }
 }

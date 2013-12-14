@@ -5,8 +5,10 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import com.hyvemynd.musiccloud.rest.callback.OnGetSuccessCallback;
+import com.hyvemynd.musiccloud.rest.callback.OnDeleteCallback;
+import com.hyvemynd.musiccloud.rest.callback.OnGetCallback;
 import com.hyvemynd.musiccloud.rest.callback.OnPostCallback;
+import com.hyvemynd.musiccloud.rest.callback.OnPutCallback;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -24,9 +26,7 @@ import org.apache.http.protocol.HTTP;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
@@ -51,35 +51,17 @@ public abstract class RestService<RequestDto, ResponseDto> {
         task.execute(dto);
     }
 
-    public boolean updateObject(RequestDto dto){
-        boolean result = false;
-        PutTask task = new PutTask();
+    public void updateObject(RequestDto dto, OnPutCallback callback){
+        PutTask task = new PutTask(callback);
         task.execute(dto);
-        try {
-            result = task.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        return result;
     }
 
-    public boolean deleteObject(int id){
-        boolean result = false;
-        DeleteTask task = new DeleteTask();
+    public void deleteObject(int id, OnDeleteCallback callback){
+        DeleteTask task = new DeleteTask(callback);
         task.execute(id);
-        try {
-            result = task.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        return result;
     }
 
-    public void getObject(String identifier, OnGetSuccessCallback<ResponseDto> callback){
+    public void getObject(String identifier, OnGetCallback<ResponseDto> callback){
         GetTask task = new GetTask(callback);
         task.execute(identifier);
     }
@@ -117,29 +99,41 @@ public abstract class RestService<RequestDto, ResponseDto> {
         return getResponseObject(response);
     }
 
-    protected abstract ResponseDto getResponseObject(HttpResponse response) throws IOException;
+    private boolean isGoodResponse(HttpResponse response){
+        return response.getStatusLine().getStatusCode() == 200;
+    }
+
+    protected abstract <T> T getResponseObject(HttpResponse response) throws IOException;
 
     protected <T> T getResponseObject(HttpResponse response, Class<T> responseType) throws IOException {
-        JsonReader reader = null;
-        try{
-            reader = new JsonReader(new BufferedReader(
-                    new InputStreamReader(response.getEntity().getContent(), "UTF-8")));
-            return new Gson().fromJson(reader, responseType);
-        } finally {
-            assert reader != null;
-            reader.close();
+        if (isGoodResponse(response)){
+            JsonReader reader = null;
+            try{
+                reader = new JsonReader(new BufferedReader(
+                        new InputStreamReader(response.getEntity().getContent(), "UTF-8")));
+                return new Gson().fromJson(reader, responseType);
+            } finally {
+                assert reader != null;
+                reader.close();
+            }
+        } else {
+            return null;
         }
     }
 
     protected <T> T getResponseObject(HttpResponse response, Type type) throws IOException {
-        JsonReader reader = null;
-        try{
-            reader = new JsonReader(new BufferedReader(
-                    new InputStreamReader(response.getEntity().getContent(), "UTF-8")));
-            return new Gson().fromJson(reader, type);
-        } finally {
-            assert reader != null;
-            reader.close();
+        if (isGoodResponse(response)){
+            JsonReader reader = null;
+            try{
+                reader = new JsonReader(new BufferedReader(
+                        new InputStreamReader(response.getEntity().getContent(), "UTF-8")));
+                return new Gson().fromJson(reader, type);
+            } finally {
+                assert reader != null;
+                reader.close();
+            }
+        } else {
+            return null;
         }
     }
 
@@ -200,6 +194,11 @@ public abstract class RestService<RequestDto, ResponseDto> {
     }
 
     protected class PutTask extends AsyncTask<RequestDto, Void, Boolean>{
+        private OnPutCallback callback;
+
+        public PutTask(OnPutCallback callback) {
+            this.callback = callback;
+        }
 
         @Override
         protected Boolean doInBackground(RequestDto... params) {
@@ -211,9 +210,20 @@ public abstract class RestService<RequestDto, ResponseDto> {
             }
             return result;
         }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            callback.onPutSuccess(aBoolean);
+            super.onPostExecute(aBoolean);
+        }
     }
 
     protected class DeleteTask extends AsyncTask<Integer, Void, Boolean>{
+        private OnDeleteCallback callback;
+
+        public DeleteTask(OnDeleteCallback callback) {
+            this.callback = callback;
+        }
 
         @Override
         protected Boolean doInBackground(Integer... params) {
@@ -225,12 +235,18 @@ public abstract class RestService<RequestDto, ResponseDto> {
             }
             return result;
         }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            callback.onDeleteSuccess(aBoolean);
+            super.onPostExecute(aBoolean);
+        }
     }
 
     protected class GetTask extends AsyncTask<String, Void, ResponseDto>{
-        private OnGetSuccessCallback<ResponseDto> callback;
+        private OnGetCallback<ResponseDto> callback;
 
-        public GetTask(OnGetSuccessCallback<ResponseDto> callback) {
+        public GetTask(OnGetCallback<ResponseDto> callback) {
             this.callback = callback;
         }
 

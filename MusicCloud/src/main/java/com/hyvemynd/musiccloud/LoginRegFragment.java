@@ -87,10 +87,12 @@ public class LoginRegFragment extends Fragment implements RequestCallback {
 
         //username
         usernameView.setHint(R.string.username_hint);
+        usernameView.setText("test@test");
         usernameView.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
 
         //password
         passwordView.setHint(R.string.password_hint);
+        passwordView.setText("test");
         passwordView.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
         // password confirm
@@ -224,5 +226,10 @@ public class LoginRegFragment extends Fragment implements RequestCallback {
     @Override
     public void onModelChanged() {
 
+    }
+
+    @Override
+    public void onRequestFail(String message) {
+        usernameView.setText(message);
     }
 }
