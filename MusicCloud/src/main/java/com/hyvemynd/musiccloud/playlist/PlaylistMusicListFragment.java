@@ -4,8 +4,10 @@ import android.app.ListFragment;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import com.hyvemynd.musiccloud.MainActivity;
 import com.hyvemynd.musiccloud.MusicCloudApplication;
 import com.hyvemynd.musiccloud.MusicCloudModel;
 import com.hyvemynd.musiccloud.musiclist.MusicListAdapter;
@@ -39,7 +41,7 @@ public class PlaylistMusicListFragment extends ListFragment implements RequestCa
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                ((MainActivity)getActivity()).showMusicListForAddPlaylist();
             }
         });
         removeButton = new Button(getActivity());
@@ -54,6 +56,17 @@ public class PlaylistMusicListFragment extends ListFragment implements RequestCa
                 }
             }
         });
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+        if (isRemoving){
+            model.removeSongFromPlaylist(position, this);
+            closeRemoveDialog();
+        } else {
+            onSongSelectedListener.onSongSelected(position);
+        }
     }
 
     private void removeSong(){

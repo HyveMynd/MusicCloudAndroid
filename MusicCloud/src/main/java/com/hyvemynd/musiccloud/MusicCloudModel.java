@@ -29,6 +29,7 @@ public class MusicCloudModel {
     private static MusicCloudModel model;
 
     private String userEmail;
+    private int currentPlaylistId;
     private List<PlaylistResponseDto> allPlaylists;
     private List<SongResponseDto> allSongs;
     private List<SongResponseDto> currentPlaylist;
@@ -156,7 +157,7 @@ public class MusicCloudModel {
         }
     }
 
-    public List<SongItem> getPlaylistForPlayer(int playlistId, boolean isEntireLibrary){
+    public List<SongItem> getPlaylistForPlayer(boolean isEntireLibrary){
         List<SongItem> songs = new ArrayList<SongItem>();
         if (isEntireLibrary){
             for(SongResponseDto s : allSongs){
@@ -172,12 +173,36 @@ public class MusicCloudModel {
         return songs;
     }
 
-    public void addSongToPlaylist(int songId, final RequestCallback callback){
-
+    public void addSongToPlaylist(int songPosition, final RequestCallback callback){
+        PlaylistService service = new PlaylistService();
+        final SongResponseDto song = allSongs.get(songPosition);
+        service.addSongToPlaylist(currentPlaylistId, song.Id, new OnPostCallback() {
+            @Override
+            public void onPostSuccess(int result) {
+                if (result != 0){
+                    currentPlaylist.add(song);
+                    callback.onModelChanged();
+                } else{
+                    callback.onRequestFail("Could not add song to playlist");
+                }
+            }
+        });
     }
 
-    public void removeSongFromPlaylist(int songId, final RequestCallback callback){
-
+    public void removeSongFromPlaylist(final int songPosition, final RequestCallback callback){
+        PlaylistService service = new PlaylistService();
+        SongResponseDto song = currentPlaylist.get(songPosition);
+        service.removeSongFromPlaylist(currentPlaylistId, song.Id, new OnDeleteCallback() {
+            @Override
+            public void onDeleteSuccess(boolean result) {
+                if (result){
+                    callback.onModelChanged();
+                    currentPlaylist.remove(songPosition);
+                } else{
+                    callback.onRequestFail("Could not add song to playlist");
+                }
+            }
+        });
     }
 
     public void removePlaylist(final int playlistPosition, final RequestCallback callback){
@@ -198,7 +223,8 @@ public class MusicCloudModel {
 
     public void getSongsForPlaylist(final int playlistPosition, final RequestCallback callback){
         PlaylistService service = new PlaylistService();
-        PlaylistResponseDto pl = allPlaylists.get(playlistPosition);
+        final PlaylistResponseDto pl = allPlaylists.get(playlistPosition);
+        currentPlaylistId = pl.Id;
         service.getSongsForPlaylist(pl.Id, new OnGetCallback<List<SongResponseDto>>() {
             @Override
             public void onGetSuccess(List<SongResponseDto> result) {

@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import com.hyvemynd.musiccloud.dto.SongResponseDto;
 import com.hyvemynd.musiccloud.musiclist.MusicListFragment;
 import com.hyvemynd.musiccloud.musiclist.OnSongSelectedListener;
 import com.hyvemynd.musiccloud.musiclist.SongItem;
@@ -51,9 +52,7 @@ public class MainActivity extends Activity {
         musicListFragment.setOnSongSelectedListener(new OnSongSelectedListener() {
             @Override
             public void onSongSelected(int position) {
-                replaceFragment(MUSIC_PLAYER_TAG, playerFragment);
-                List<SongItem> songs = model.getPlaylistForPlayer(0, true);
-                playerFragment.setPlaylist(songs, position);
+                getPlaylistForPlayer(true, position);
             }
         });
         playlistFragment = new PlaylistListFragment();
@@ -62,9 +61,7 @@ public class MainActivity extends Activity {
         plMusicListFragment.setOnSongSelectedListener(new OnSongSelectedListener() {
             @Override
             public void onSongSelected(int position) {
-                replaceFragment(MUSIC_PLAYER_TAG, playerFragment);
-                List<SongItem> songs = model.getPlaylistForPlayer(0, false);
-                playerFragment.setPlaylist(songs, position);
+                getPlaylistForPlayer(false, position);
             }
         });
 
@@ -116,5 +113,38 @@ public class MainActivity extends Activity {
 
     public void showPlaylist(){
         replaceFragment(PL_MUSIC_LIST_TAG, plMusicListFragment);
+    }
+
+    public void showMusicListForAddPlaylist(){
+        musicListFragment.setOnSongSelectedListener(new OnSongSelectedListener() {
+            @Override
+            public void onSongSelected(int position) {
+                addSongToPlaylist(position);
+            }
+        });
+        replaceFragment(MUSIC_LIST_TAG, musicListFragment);
+    }
+
+    private void addSongToPlaylist(int position){
+        musicListFragment.setOnSongSelectedListener(new OnSongSelectedListener() {
+            @Override
+            public void onSongSelected(int position) {
+                getPlaylistForPlayer(true, position);
+            }
+        });
+        replaceFragment(PL_MUSIC_LIST_TAG, plMusicListFragment);
+        model.addSongToPlaylist(position ,plMusicListFragment);
+    }
+
+    private void getPlaylistForPlayer(boolean isEntireLibrary, int songPosition){
+        if (isEntireLibrary){
+            replaceFragment(MUSIC_PLAYER_TAG, playerFragment);
+            List<SongItem> songs = model.getPlaylistForPlayer(true);
+            playerFragment.setPlaylist(songs, songPosition);
+        } else {
+            replaceFragment(MUSIC_PLAYER_TAG, playerFragment);
+            List<SongItem> songs = model.getPlaylistForPlayer(false);
+            playerFragment.setPlaylist(songs, songPosition);
+        }
     }
 }

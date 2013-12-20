@@ -6,10 +6,14 @@ import com.google.gson.reflect.TypeToken;
 import com.hyvemynd.musiccloud.dto.PlaylistRequestDto;
 import com.hyvemynd.musiccloud.dto.PlaylistResponseDto;
 import com.hyvemynd.musiccloud.dto.SongResponseDto;
+import com.hyvemynd.musiccloud.rest.callback.OnDeleteCallback;
 import com.hyvemynd.musiccloud.rest.callback.OnGetCallback;
+import com.hyvemynd.musiccloud.rest.callback.OnPostCallback;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 
@@ -77,7 +81,65 @@ public class PlaylistService extends RestService<PlaylistRequestDto, PlaylistRes
                 super.onPostExecute(songResponseDtos);
             }
         };
-        getTask.execute(null);
+        getTask.execute();
+    }
+
+    public void addSongToPlaylist(final int playlistId, final int songId, final OnPostCallback callback){
+        AsyncTask<Void, Void, Boolean> postTask = new AsyncTask<Void, Void, Boolean>() {
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                boolean result = false;
+                HttpPost request = new HttpPost(getPostUrl() + String.format("/%d/songs/%d", playlistId, songId));
+                request.setHeader("Accept", JSON_TYPE);
+                try{
+                    HttpResponse response = client.execute(request);
+                    if (response.getStatusLine().getStatusCode() == 200){
+                        result = getResponseObject(response, Boolean.class);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                if (aBoolean){
+                    callback.onPostSuccess(1);
+                } else {
+                    callback.onPostSuccess(0);
+                }
+                super.onPostExecute(aBoolean);
+            }
+        };
+        postTask.execute();
+    }
+
+    public void removeSongFromPlaylist(final int playlistId, final int songId, final OnDeleteCallback callback){
+        AsyncTask<Void, Void, Boolean> deleteTask = new AsyncTask<Void, Void, Boolean>() {
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                boolean result = false;
+                HttpDelete request = new HttpDelete(getDeleteUrl() + String.format("/%d/songs/%d", playlistId, songId));
+                request.setHeader("Accept", JSON_TYPE);
+                try{
+                    HttpResponse response = client.execute(request);
+                    if (response.getStatusLine().getStatusCode() == 200){
+                        result = getResponseObject(response, Boolean.class);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                callback.onDeleteSuccess(aBoolean);
+                super.onPostExecute(aBoolean);
+            }
+        } ;
+        deleteTask.execute();
     }
 
     @Override
