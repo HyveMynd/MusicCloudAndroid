@@ -1,27 +1,19 @@
 package com.hyvemynd.musiccloud.musiclist;
 
 import android.app.ListFragment;
-import android.content.ContentResolver;
 import android.content.Intent;
-import android.database.Cursor;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.hyvemynd.musiccloud.MusicCloudApplication;
 import com.hyvemynd.musiccloud.MusicCloudModel;
 import com.hyvemynd.musiccloud.rest.callback.RequestCallback;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 /**
  * Created by andresmonroy on 11/26/13.
@@ -90,7 +82,7 @@ public class MusicListFragment extends ListFragment implements RequestCallback {
         if (requestCode == SONG_PICK_ACTION){
             Uri uri = data.getData();
             Log.e("musiclist", uri.getPath());
-            model.addSong(getActivity().getContentResolver(), uri, this);
+            model.addSongToLibrary(getActivity().getContentResolver(), uri, this);
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -112,7 +104,7 @@ public class MusicListFragment extends ListFragment implements RequestCallback {
 
     @Override
     public void onRequestFail(String message) {
-        addButtonView.setText(message);
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT);
     }
 
     public OnSongSelectedListener getOnSongSelectedListener() {

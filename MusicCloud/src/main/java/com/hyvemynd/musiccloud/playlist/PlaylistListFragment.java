@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.hyvemynd.musiccloud.MusicCloudApplication;
 import com.hyvemynd.musiccloud.MusicCloudModel;
@@ -17,7 +18,7 @@ import com.hyvemynd.musiccloud.rest.callback.RequestCallback;
 /**
  * Created by andresmonroy on 11/26/13.
  */
-public class PlaylistListFragment extends ListFragment implements OnSongSelectedListener, RequestCallback {
+public class PlaylistListFragment extends ListFragment implements RequestCallback {
     private MusicCloudModel model;
     private Button addPlaylistButton;
     private Button removePlaylistButton;
@@ -79,7 +80,11 @@ public class PlaylistListFragment extends ListFragment implements OnSongSelected
 
     private void createPlaylist(){
         closeCreateDialog();
-        model.createPlaylist(playlistEditText.getText().toString(), false, this);
+        if (playlistEditText.getText().toString().equals("")){
+            Toast.makeText(getActivity(), "Name cannot be empty", Toast.LENGTH_SHORT);
+        } else {
+            model.createPlaylist(playlistEditText.getText().toString(), false, this);
+        }
     }
 
     private void openCreateDialog(){
@@ -109,13 +114,19 @@ public class PlaylistListFragment extends ListFragment implements OnSongSelected
     }
 
     @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
+    public void onDestroyView() {
+        super.onDestroyView();
+        setListAdapter(null);
     }
 
     @Override
-    public void onSongSelected(int position) {
-
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+        if (isRemoving){
+            model.removePlaylist(position, this);
+        } else {
+            model.getSongsForPlaylist(position, this);
+        }
     }
 
     @Override
@@ -125,12 +136,11 @@ public class PlaylistListFragment extends ListFragment implements OnSongSelected
 
     @Override
     public void onModelChanged() {
-        ((PlaylistListAdapter)getListAdapter()).setList(model.getAllPlayLists());
-        ((PlaylistListAdapter)getListAdapter()).notifyDataSetChanged();
+        setListAdapter(new PlaylistListAdapter(getActivity(), model.getAllPlayLists()));
     }
 
     @Override
     public void onRequestFail(String message) {
-
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT);
     }
 }

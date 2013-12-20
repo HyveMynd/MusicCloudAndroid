@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,7 +18,6 @@ import com.hyvemynd.musiccloud.musicplayer.MusicPlayerFragment;
 import com.hyvemynd.musiccloud.playlist.PlaylistListFragment;
 import com.hyvemynd.musiccloud.rest.callback.RequestCallback;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends Activity {
@@ -51,7 +49,7 @@ public class MainActivity extends Activity {
             @Override
             public void onSongSelected(int position) {
                 replaceFragment(MUSIC_PLAYER_TAG, playerFragment);
-                List<SongItem> songs = model.getPlaylist(true);
+                List<SongItem> songs = model.getPlaylistForPlayer(0, true);
                 playerFragment.setPlaylist(songs, position);
             }
         });
@@ -102,5 +100,9 @@ public class MainActivity extends Activity {
 
     public void loginSuccess(){
         replaceFragment(MUSIC_LIST_TAG, musicListFragment);
+    }
+
+    public void showPlaylist(){
+
     }
 }

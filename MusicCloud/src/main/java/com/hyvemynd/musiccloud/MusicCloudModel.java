@@ -30,6 +30,7 @@ public class MusicCloudModel {
     private String userEmail;
     private List<PlaylistResponseDto> allPlaylists;
     private List<SongResponseDto> allSongs;
+    private List<SongResponseDto> currentPlaylist;
 
     private MusicCloudModel(){
         allSongs = new ArrayList<SongResponseDto>();
@@ -50,7 +51,11 @@ public class MusicCloudModel {
         service.createObject(dto, new OnPostCallback() {
             @Override
             public void onPostSuccess(int result) {
-                callback.onDataReceived(result);
+                if (result != 0){
+                    callback.onDataReceived(result);
+                } else {
+                    callback.onRequestFail("Could not create user.");
+                }
             }
         });
     }
@@ -61,7 +66,11 @@ public class MusicCloudModel {
         service.login(email, password, new OnGetCallback<Boolean>() {
             @Override
             public void onGetSuccess(Boolean result) {
-                callback.onDataReceived(result);
+                if (result){
+                    callback.onDataReceived(result);
+                } else {
+                    callback.onRequestFail("Error logging in.");
+                }
             }
         });
     }
@@ -71,9 +80,10 @@ public class MusicCloudModel {
         service.getSongsForUser(new OnGetCallback<List<SongResponseDto>>() {
             @Override
             public void onGetSuccess(List<SongResponseDto> result) {
-                if (result != null)
+                if (result != null){
                     allSongs = result;
-                callback.onModelChanged();
+                    callback.onModelChanged();
+                }
             }
         });
     }
@@ -83,9 +93,10 @@ public class MusicCloudModel {
         service.getPlaylistsForUser(userEmail, new OnGetCallback<List<PlaylistResponseDto>>() {
             @Override
             public void onGetSuccess(List<PlaylistResponseDto> result) {
-                if (result != null)
+                if (result != null) {
                     allPlaylists = result;
-                callback.onModelChanged();
+                    callback.onModelChanged();
+                }
             }
         });
     }
@@ -95,12 +106,16 @@ public class MusicCloudModel {
         service.createObject(new PlaylistRequestDto(userEmail, name, isTemp), new OnPostCallback() {
             @Override
             public void onPostSuccess(int result) {
-                callback.onModelChanged();
+                if (result != 0){
+                    callback.onModelChanged();
+                } else {
+                    callback.onRequestFail("Error creating playlist");
+                }
             }
         });
     }
 
-    public void addSong(final ContentResolver resolver, final Uri songUri, final RequestCallback callback){
+    public void addSongToLibrary(final ContentResolver resolver, final Uri songUri, final RequestCallback callback){
         Cursor cursor =  resolver.query(songUri, null, null, null, null);
         if (cursor == null){
             callback.onRequestFail("No such file.");
@@ -128,7 +143,11 @@ public class MusicCloudModel {
                     service.getSongData(resolver, songUri, result, new OnPostCallback() {
                         @Override
                         public void onPostSuccess(int result) {
-                            requestAllSongs(callback);
+                            if (result != 0){
+                                requestAllSongs(callback);
+                            } else {
+                                callback.onRequestFail("Error adding song");
+                            }
                         }
                     });
                 }
@@ -136,26 +155,44 @@ public class MusicCloudModel {
         }
     }
 
-    public List<SongItem> getPlaylist(boolean isEntireLibrary){
+    public List<SongItem> getPlaylistForPlayer(int playlistId, boolean isEntireLibrary){
         List<SongItem> songs = new ArrayList<SongItem>();
         if (isEntireLibrary){
             for(SongResponseDto s : allSongs){
                 String url = SongService.getSongDataUrl(s.Id);
                 songs.add(new SongItem(s.Name, s.Artist, s.Album, url));
             }
+        } else {
+
         }
         return songs;
+    }
+
+    public void addSongToPlaylist(int songId, final RequestCallback callback){
+
+    }
+
+    public void removeSongFromPlaylist(int songId, final RequestCallback callback){
+
+    }
+
+    public void removePlaylist(int playlistPosition, final RequestCallback callback){
+
+    }
+
+    public void getSongsForPlaylist(int playlistPosition, final RequestCallback callback){
+
     }
 
     public List<PlaylistResponseDto> getAllPlayLists(){
         return allPlaylists;
     }
 
-    public String getUserEmail() {
-        return userEmail;
-    }
-
     public List<SongResponseDto> getAllSongs() {
         return allSongs;
+    }
+
+    public List<SongResponseDto> getCurrentPlaylist(){
+        return currentPlaylist;
     }
 }

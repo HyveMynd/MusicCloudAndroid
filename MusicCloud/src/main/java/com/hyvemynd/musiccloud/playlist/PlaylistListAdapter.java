@@ -10,6 +10,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.hyvemynd.musiccloud.dto.PlaylistResponseDto;
+import com.hyvemynd.musiccloud.dto.SongResponseDto;
 
 import java.util.List;
 

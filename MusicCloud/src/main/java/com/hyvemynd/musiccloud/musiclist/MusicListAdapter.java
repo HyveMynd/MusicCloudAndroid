@@ -87,6 +87,10 @@ public class MusicListAdapter extends ArrayAdapter {
         return row;
     }
 
+    public void setSongList(List<SongResponseDto> list){
+        this.songs = list;
+    }
+
     class ViewHolder{
         TextView songName;
         TextView artistName;
