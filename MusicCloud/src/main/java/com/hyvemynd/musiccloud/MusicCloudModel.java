@@ -13,6 +13,7 @@ import com.hyvemynd.musiccloud.dto.UserRequestDto;
 import com.hyvemynd.musiccloud.musiclist.SongItem;
 import com.hyvemynd.musiccloud.rest.PlaylistService;
 import com.hyvemynd.musiccloud.rest.SongService;
+import com.hyvemynd.musiccloud.rest.callback.OnDeleteCallback;
 import com.hyvemynd.musiccloud.rest.callback.OnGetCallback;
 import com.hyvemynd.musiccloud.rest.callback.RequestCallback;
 import com.hyvemynd.musiccloud.rest.UserService;
@@ -107,7 +108,7 @@ public class MusicCloudModel {
             @Override
             public void onPostSuccess(int result) {
                 if (result != 0){
-                    callback.onModelChanged();
+                    requestAllPlayLists(callback);
                 } else {
                     callback.onRequestFail("Error creating playlist");
                 }
@@ -163,7 +164,10 @@ public class MusicCloudModel {
                 songs.add(new SongItem(s.Name, s.Artist, s.Album, url));
             }
         } else {
-
+            for(SongResponseDto s : currentPlaylist){
+                String url = SongService.getSongDataUrl(s.Id);
+                songs.add(new SongItem(s.Name, s.Artist, s.Album, url));
+            }
         }
         return songs;
     }
@@ -176,12 +180,32 @@ public class MusicCloudModel {
 
     }
 
-    public void removePlaylist(int playlistPosition, final RequestCallback callback){
-
+    public void removePlaylist(final int playlistPosition, final RequestCallback callback){
+        PlaylistResponseDto pl = allPlaylists.get(playlistPosition);
+        PlaylistService service = new PlaylistService();
+        service.deleteObject(pl.Id, new OnDeleteCallback() {
+            @Override
+            public void onDeleteSuccess(boolean result) {
+                if (result){
+                    allPlaylists.remove(playlistPosition);
+                    callback.onModelChanged();
+                } else {
+                    callback.onRequestFail("Could not delete playlist");
+                }
+            }
+        });
     }
 
-    public void getSongsForPlaylist(int playlistPosition, final RequestCallback callback){
-
+    public void getSongsForPlaylist(final int playlistPosition, final RequestCallback callback){
+        PlaylistService service = new PlaylistService();
+        PlaylistResponseDto pl = allPlaylists.get(playlistPosition);
+        service.getSongsForPlaylist(pl.Id, new OnGetCallback<List<SongResponseDto>>() {
+            @Override
+            public void onGetSuccess(List<SongResponseDto> result) {
+                currentPlaylist = result;
+                callback.onDataReceived(currentPlaylist);
+            }
+        });
     }
 
     public List<PlaylistResponseDto> getAllPlayLists(){

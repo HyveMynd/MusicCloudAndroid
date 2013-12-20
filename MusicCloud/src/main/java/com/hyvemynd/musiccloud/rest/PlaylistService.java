@@ -14,6 +14,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,6 +48,33 @@ public class PlaylistService extends RestService<PlaylistRequestDto, PlaylistRes
             protected void onPostExecute(List<PlaylistResponseDto> playlistResponseDtos) {
                 callback.onGetSuccess(playlistResponseDtos);
                 super.onPostExecute(playlistResponseDtos);
+            }
+        };
+        getTask.execute(null);
+    }
+
+    public void getSongsForPlaylist(final int playlistId, final OnGetCallback<List<SongResponseDto>> callback){
+        AsyncTask<Void, Void, List<SongResponseDto>> getTask = new AsyncTask<Void, Void, List<SongResponseDto>>() {
+            @Override
+            protected List<SongResponseDto> doInBackground(Void... params) {
+                List<SongResponseDto> result = new ArrayList<SongResponseDto>();
+                HttpGet request = new HttpGet(getGetUrl() + String.format("/%d/songs", playlistId));
+                request.setHeader("Accept", JSON_TYPE);
+                try{
+                    HttpResponse response = client.execute(request);
+                    if (response.getStatusLine().getStatusCode() == 200){
+                        result = getResponseObject(response, new TypeToken<List<SongResponseDto>>(){}.getType());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+
+            @Override
+            protected void onPostExecute(List<SongResponseDto> songResponseDtos) {
+                callback.onGetSuccess(songResponseDtos);
+                super.onPostExecute(songResponseDtos);
             }
         };
         getTask.execute(null);

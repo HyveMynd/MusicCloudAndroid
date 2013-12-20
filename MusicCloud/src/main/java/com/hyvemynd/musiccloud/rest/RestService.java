@@ -153,9 +153,9 @@ public abstract class RestService<RequestDto, ResponseDto> {
     }
 
     protected HttpDelete getHttpDelete(String url, int id){
-        HttpDelete delete = new HttpDelete(url);
-        delete.setHeader("Accept", JSON_TYPE);
-        delete.setParams(new BasicHttpParams().setParameter("Id", id));
+        HttpDelete delete = new HttpDelete(url + "?Id=" + id);
+        delete.addHeader("Content-Type", JSON_TYPE);
+        delete.addHeader("Accept", JSON_TYPE);
         return delete;
     }
 

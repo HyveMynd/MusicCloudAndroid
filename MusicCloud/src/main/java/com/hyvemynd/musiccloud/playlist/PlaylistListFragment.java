@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.hyvemynd.musiccloud.MainActivity;
 import com.hyvemynd.musiccloud.MusicCloudApplication;
 import com.hyvemynd.musiccloud.MusicCloudModel;
 import com.hyvemynd.musiccloud.musiclist.OnSongSelectedListener;
@@ -106,6 +107,12 @@ public class PlaylistListFragment extends ListFragment implements RequestCallbac
         isRemoving = true;
     }
 
+    private void closeRemoveDialog(){
+        removePlaylistButton.setText("Remove");
+        addPlaylistButton.setVisibility(View.VISIBLE);
+        isRemoving = false;
+    }
+
     private void closeCreateDialog(){
         isCreating = false;
         playlistEditText.setVisibility(View.GONE);
@@ -123,15 +130,16 @@ public class PlaylistListFragment extends ListFragment implements RequestCallbac
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
         if (isRemoving){
-            model.removePlaylist(position, this);
+            model.removePlaylist(position-1, this);
+            closeRemoveDialog();
         } else {
-            model.getSongsForPlaylist(position, this);
+            model.getSongsForPlaylist(position-1, this);
         }
     }
 
     @Override
     public void onDataReceived(Object result) {
-
+        ((MainActivity)getActivity()).showPlaylist();
     }
 
     @Override

@@ -16,6 +16,7 @@ import com.hyvemynd.musiccloud.musiclist.OnSongSelectedListener;
 import com.hyvemynd.musiccloud.musiclist.SongItem;
 import com.hyvemynd.musiccloud.musicplayer.MusicPlayerFragment;
 import com.hyvemynd.musiccloud.playlist.PlaylistListFragment;
+import com.hyvemynd.musiccloud.playlist.PlaylistMusicListFragment;
 import com.hyvemynd.musiccloud.rest.callback.RequestCallback;
 
 import java.util.List;
@@ -25,12 +26,14 @@ public class MainActivity extends Activity {
     private static final String PLAYLIST_TAG = "playlist_list_tag";
     private static final String MUSIC_PLAYER_TAG = "music_player_tag";
     private static final String SETTINGS_TAG = "settings_view_tag";
+    public static final String PL_MUSIC_LIST_TAG = "pl_music_list_tag";
 
     private MusicCloudModel model;
     private LinearLayout mainLayout;
     private MusicListFragment musicListFragment;
     private PlaylistListFragment playlistFragment;
     private MusicPlayerFragment playerFragment;
+    private PlaylistMusicListFragment plMusicListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +58,15 @@ public class MainActivity extends Activity {
         });
         playlistFragment = new PlaylistListFragment();
         playerFragment = new MusicPlayerFragment();
+        plMusicListFragment = new PlaylistMusicListFragment();
+        plMusicListFragment.setOnSongSelectedListener(new OnSongSelectedListener() {
+            @Override
+            public void onSongSelected(int position) {
+                replaceFragment(MUSIC_PLAYER_TAG, playerFragment);
+                List<SongItem> songs = model.getPlaylistForPlayer(0, false);
+                playerFragment.setPlaylist(songs, position);
+            }
+        });
 
         FragmentTransaction txn = getFragmentManager().beginTransaction();
         txn.add(mainLayout.getId(), loginRegFragment);
@@ -103,6 +115,6 @@ public class MainActivity extends Activity {
     }
 
     public void showPlaylist(){
-
+        replaceFragment(PL_MUSIC_LIST_TAG, plMusicListFragment);
     }
 }
