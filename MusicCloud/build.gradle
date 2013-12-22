@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.6.+'
+        classpath 'com.android.tools.build:gradle:0.7.+'
     }
 }
 apply plugin: 'android'
@@ -26,7 +26,4 @@ dependencies {
     compile "com.google.code.gson:gson:2.2.4"
     compile "commons-io:commons-io:2.4"
     compile "org.apache.httpcomponents:httpmime:4.3.1"
-    compile "org.apache.httpcomponents:httpclient:4.3.1"
-    compile "org.apache.httpcomponents:httpcore:4.3"
-    compile "org.apache.james:apache-mime4j:0.7.2"
 }

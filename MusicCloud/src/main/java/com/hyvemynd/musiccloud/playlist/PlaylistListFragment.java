@@ -3,17 +3,14 @@ package com.hyvemynd.musiccloud.playlist;
 import android.app.ListFragment;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.hyvemynd.musiccloud.MainActivity;
 import com.hyvemynd.musiccloud.MusicCloudApplication;
 import com.hyvemynd.musiccloud.MusicCloudModel;
-import com.hyvemynd.musiccloud.musiclist.OnSongSelectedListener;
 import com.hyvemynd.musiccloud.rest.callback.RequestCallback;
 
 /**
@@ -63,10 +60,10 @@ public class PlaylistListFragment extends ListFragment implements RequestCallbac
         removePlaylistButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isCreating){
+                if (isCreating) {
                     closeCreateDialog();
                 } else {
-                    if (isRemoving){
+                    if (isRemoving) {
                         removePlaylist();
                     } else {
                         openRemoveDialog();

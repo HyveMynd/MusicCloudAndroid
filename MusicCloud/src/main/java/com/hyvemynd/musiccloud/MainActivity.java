@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import com.hyvemynd.musiccloud.dto.SongResponseDto;
 import com.hyvemynd.musiccloud.musiclist.MusicListFragment;
 import com.hyvemynd.musiccloud.musiclist.OnSongSelectedListener;
 import com.hyvemynd.musiccloud.musiclist.SongItem;
@@ -133,7 +132,7 @@ public class MainActivity extends Activity {
             }
         });
         replaceFragment(PL_MUSIC_LIST_TAG, plMusicListFragment);
-        model.addSongToPlaylist(position ,plMusicListFragment);
+        model.addSongToPlaylist(position, plMusicListFragment);
     }
 
     private void getPlaylistForPlayer(boolean isEntireLibrary, int songPosition){

@@ -1,8 +1,5 @@
 package com.hyvemynd.musiccloud.dto;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
 /**
  * Created by andresmonroy on 12/11/13.
  */
