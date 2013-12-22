@@ -20,9 +20,11 @@ public class PlaylistListFragment extends ListFragment implements RequestCallbac
     private MusicCloudModel model;
     private Button addPlaylistButton;
     private Button removePlaylistButton;
+    private Button shareButton;
     private EditText playlistEditText;
     private boolean isCreating;
     private boolean isRemoving;
+    private boolean isSharing;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -30,9 +32,11 @@ public class PlaylistListFragment extends ListFragment implements RequestCallbac
         initViews();
         isCreating = false;
         isRemoving = false;
+        isSharing = false;
         getListView().addHeaderView(playlistEditText);
         getListView().addFooterView(addPlaylistButton);
         getListView().addFooterView(removePlaylistButton);
+        getListView().addFooterView(shareButton);
         model = ((MusicCloudApplication) getActivity().getApplication()).getModel();
 
         if(model.getAllPlayLists().size() != 0)
@@ -72,8 +76,42 @@ public class PlaylistListFragment extends ListFragment implements RequestCallbac
             }
         });
         playlistEditText = new EditText(getActivity());
-        playlistEditText.setHint("Enter Playlist Name");
         playlistEditText.setVisibility(View.GONE);
+        shareButton = new Button(getActivity());
+        shareButton.setText("Share");
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isSharing){
+                    closeShareDialog();
+                } else {
+                    openShareDialog();
+                }
+            }
+        });
+    }
+
+    private void sharePlaylist(int playlistPos){
+        closeShareDialog();
+        String email = playlistEditText.getText().toString();
+        model.sharePlaylist(email, playlistPos, this);
+    }
+
+    private void openShareDialog(){
+        isSharing = true;
+        playlistEditText.setVisibility(View.VISIBLE);
+        playlistEditText.setHint("Enter friend's email");
+        shareButton.setText("Cancel");
+        addPlaylistButton.setVisibility(View.GONE);
+        removePlaylistButton.setVisibility(View.GONE);
+    }
+
+    private void closeShareDialog(){
+        isSharing = false;
+        playlistEditText.setVisibility(View.GONE);
+        shareButton.setText("Share");
+        addPlaylistButton.setVisibility(View.VISIBLE);
+        removePlaylistButton.setVisibility(View.VISIBLE);
     }
 
     private void createPlaylist(){
@@ -88,6 +126,7 @@ public class PlaylistListFragment extends ListFragment implements RequestCallbac
     private void openCreateDialog(){
         isCreating = true;
         playlistEditText.setVisibility(View.VISIBLE);
+        playlistEditText.setHint("Enter Playlist Name");
         addPlaylistButton.setText("Create");
         removePlaylistButton.setText("Cancel");
     }
@@ -129,6 +168,8 @@ public class PlaylistListFragment extends ListFragment implements RequestCallbac
         if (isRemoving){
             model.removePlaylist(position-1, this);
             closeRemoveDialog();
+        } else if (isSharing){
+            sharePlaylist(position-1);
         } else {
             model.getSongsForPlaylist(position-1, this);
         }

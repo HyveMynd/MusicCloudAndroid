@@ -234,6 +234,21 @@ public class MusicCloudModel {
         });
     }
 
+    public void sharePlaylist(final String email, final int playlistPos, final RequestCallback callback){
+        PlaylistResponseDto pl = allPlaylists.get(playlistPos);
+        PlaylistService service = new PlaylistService();
+        service.createObject(new PlaylistRequestDto(email, "shared from " + userEmail, true), new OnPostCallback() {
+            @Override
+            public void onPostSuccess(int result) {
+                if (result != 0){
+                    callback.onDataReceived("Success");
+                } else {
+                    callback.onRequestFail("Could not share playlist");
+                }
+            }
+        });
+    }
+
     public List<PlaylistResponseDto> getAllPlayLists(){
         return allPlaylists;
     }

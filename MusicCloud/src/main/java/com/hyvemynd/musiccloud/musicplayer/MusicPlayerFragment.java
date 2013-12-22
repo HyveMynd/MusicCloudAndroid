@@ -27,7 +27,6 @@ public class MusicPlayerFragment extends Fragment implements OnClickListener, On
     private LinearLayout mainLayout;
     private Button buttonPlayPause;
     private SeekBar seekBarProgress;
-    private EditText editTextSongURL;
     private MediaPlayer mediaPlayer;
     private int mediaFileLengthInMilliseconds; // this value contains the song duration in milliseconds. Look at getDuration() method in MediaPlayer class
     private Queue<SongItem> playlist;
@@ -60,15 +59,15 @@ public class MusicPlayerFragment extends Fragment implements OnClickListener, On
         seekBarProgress.setId(21);
         seekBarProgress.setMax(99); // It means 100% .0-99
         seekBarProgress.setOnTouchListener(this);
-        editTextSongURL = new EditText(getActivity());
-        editTextSongURL.setId(22);
-        editTextSongURL.setText("http://www.hrupin.com/wp-content/uploads/mp3/testsong_20_sec.mp3");
+//        editTextSongURL = new EditText(getActivity());
+//        editTextSongURL.setId(22);
+//        editTextSongURL.setText("http://www.hrupin.com/wp-content/uploads/mp3/testsong_20_sec.mp3");
 
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setOnBufferingUpdateListener(this);
         mediaPlayer.setOnCompletionListener(this);
 
-        mainLayout.addView(editTextSongURL, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+//        mainLayout.addView(editTextSongURL, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         mainLayout.addView(buttonPlayPause, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         mainLayout.addView(seekBarProgress, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
